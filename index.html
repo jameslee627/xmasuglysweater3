@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>顏色隨機抽籤</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #f7f4ff, #e3ecff);
+    }
+
+    .app {
+      min-height: 100vh;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.96);
+      padding: 28px 24px 24px;
+      border-radius: 18px;
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.08);
+      text-align: center;
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #777;
+      margin-bottom: 20px;
+    }
+
+    .result-box {
+      margin: 18px auto 10px;
+      width: min(48vw, 190px);
+      height: min(48vw, 190px);
+      max-width: 220px;
+      max-height: 220px;
+      border-radius: 30px;
+      border: 2px dashed #c9d4ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f6f7ff;
+      transition: transform 0.15s ease-out, background-color 0.15s ease-out;
+    }
+
+    .result-inner {
+      text-align: center;
+    }
+
+    .color-swatch {
+      width: 72px;
+      height: 72px;
+      border-radius: 999px;
+      margin: 0 auto 10px;
+      border: 3px solid rgba(255, 255, 255, 0.7);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+    }
+
+    .color-name {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: #333;
+      margin-bottom: 2px;
+    }
+
+    .color-name-en {
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #555;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+      padding: 12px 24px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #4a5cff, #7b5cff);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(74, 92, 255, 0.35);
+      transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, opacity 0.12s;
+      width: 100%;
+      max-width: 260px;
+    }
+
+    .btn:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 4px 10px rgba(74, 92, 255, 0.25);
+      opacity: 0.9;
+    }
+
+    .note {
+      font-size: 11px;
+      color: #999;
+      margin-top: 10px;
+    }
+
+    .shake {
+      animation: shake 0.25s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%   { transform: translateX(0); }
+      25%  { transform: translateX(-4px); }
+      50%  { transform: translateX(4px); }
+      75%  { transform: translateX(-2px); }
+      100% { transform: translateX(0); }
+    }
+
+    /* 手機優化 */
+    @media (max-width: 480px) {
+      .card {
+        padding: 24px 18px 20px;
+        border-radius: 16px;
+      }
+      .title {
+        font-size: 18px;
+      }
+      .subtitle {
+        font-size: 12px;
+      }
+      .note {
+        font-size: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="card">
+      <div class="title">顏色隨機抽籤</div>
+      <div class="subtitle">從 紅・橙・黃・綠・藍・靛・紫 中抽出一個顏色</div>
+
+      <div id="resultBox" class="result-box">
+        <div class="result-inner">
+          <div id="colorSwatch" class="color-swatch" style="background:#f6f7ff;"></div>
+          <div id="colorName" class="color-name">？</div>
+          <div id="colorNameEn" class="color-name-en">Tap to draw</div>
+        </div>
+      </div>
+
+      <button id="drawBtn" class="btn">
+        🎨 抽一個顏色
+      </button>
+
+      <div class="note">共 7 種顏色，機率相同隨機抽出。</div>
+    </div>
+  </div>
+
+  <script>
+    const colors = [
+      { key: "red",    label: "紅", labelEn: "Red",    hex: "#F44336" },
+      { key: "orange", label: "橙", labelEn: "Orange", hex: "#FF9800" },
+      { key: "yellow", label: "黃", labelEn: "Yellow", hex: "#FFEB3B" },
+      { key: "green",  label: "綠", labelEn: "Green",  hex: "#4CAF50" },
+      { key: "blue",   label: "藍", labelEn: "Blue",   hex: "#2196F3" },
+      { key: "indigo", label: "靛", labelEn: "Indigo", hex: "#3F51B5" },
+      { key: "violet", label: "紫", labelEn: "Violet", hex: "#9C27B0" },
+    ];
+
+    const resultBoxEl   = document.getElementById("resultBox");
+    const colorSwatchEl = document.getElementById("colorSwatch");
+    const colorNameEl   = document.getElementById("colorName");
+    const colorNameEnEl = document.getElementById("colorNameEn");
+    const drawBtn       = document.getElementById("drawBtn");
+
+    function drawRandomColor() {
+      const index = Math.floor(Math.random() * colors.length); // 0 ~ 6
+      const color = colors[index];
+
+      colorSwatchEl.style.background = color.hex;
+      colorNameEl.textContent = color.label;
+      colorNameEnEl.textContent = color.labelEn;
+
+      // 小晃動動畫
+      resultBoxEl.classList.remove("shake");
+      void resultBoxEl.offsetWidth; // reset animation
+      resultBoxEl.classList.add("shake");
+    }
+
+    drawBtn.addEventListener("click", drawRandomColor);
+  </script>
+</body>
+</html>
